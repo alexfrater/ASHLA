@@ -1,7 +1,7 @@
 import serial
 import os
 # Parameters
-serial_port = 'COM5'  # Change this to your serial port name
+serial_port = 'COM11'  # Change this to your serial port name
 baud_rate = 115200  # Match this to your Arduino's baud rate
 output_file_path = 'output.txt'
 ser = serial.Serial(serial_port, baud_rate)
