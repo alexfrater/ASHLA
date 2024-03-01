@@ -1,6 +1,7 @@
 import serial
+import os
 # Parameters
-serial_port = '/dev/cu.usbmodem11101'  # Change this to your serial port name
+serial_port = 'COM5'  # Change this to your serial port name
 baud_rate = 115200  # Match this to your Arduino's baud rate
 output_file_path = 'output.txt'
 ser = serial.Serial(serial_port, baud_rate)
@@ -35,7 +36,8 @@ def getpos():
             print("Could not convert POS value to an integer:", pos_value_str)
             return None
 
-
+ser.write(b'S')
+print('S')
 
 
 pos_value_str = getpos()
@@ -76,35 +78,21 @@ while(pos_value<max_vert_angle):
                     image[int((pos_value-min_vert_angle)/increment)][angle]=value
                     print(f"Stored value {value} at angle {angle}")
 
-# while pos_value<60:
-#     # while True:
-#     pos_value_test = getpos()
-#     if pos_value_test != None:
-#         pos_value = pos_value_test
-#         print(pos_value)
-#         # if pos_value == 17:
-#         # break
-#     print('pos',pos_value )
-#
-#     line = ser.readline().decode('utf-8').strip()
-#
-#
-#     if "Angle" in line:
-#         parts = line.split(":")
-#         if len(parts) == 2:
-#             angle, value = parts
-#             angle = int(angle.split()[1])  # Extract angle number
-#             value = int(value.strip())  # Extract value
-#             if 1 <= angle <= vert_distance:
-#                 print('angle',angle)
-#                 print('value',value)
-#                 # print('pos',pos_value)
-#
-#                 image[pos_value-min_vert_angle][angle]=value
-#                 # print(f"Stored value {value} at angle {angle}")
-#         # image[pos].append(line)
+folder_name = 'Data'
 
-with open('image.txt', 'w') as file:
+# The name of the file you want to save
+file_name = 'cap.txt'
+
+# The path to the folder
+folder_path = os.path.join(os.getcwd(), folder_name)
+
+# Check if the folder exists, if not, create it
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
+
+# The full path to your file
+file_path = os.path.join(folder_path, file_name)
+with open(file_path, 'w') as file:
     for element in image:
         file.write(f"{element}\n")
 
@@ -127,10 +115,10 @@ clipped_array = np.clip(array, None, 1000)
 
 # Optionally, normalize the clipped data to the range [0, 1] to enhance contrast
 # Note: This step is useful if your data varies widely in scale
-normalized_array = (clipped_array - clipped_array.min()) / (clipped_array.max() - clipped_array.min())
+#normalized_array = (clipped_array - clipped_array.min()) / (clipped_array.max() - clipped_array.min())
 # flipped_array = np.flipud(array)
 
-flipped_array = np.flipud(normalized_array)
+flipped_array = np.flipud(clipped_array)
 
 # Display the array as an image
 plt.imshow(flipped_array, cmap='gray', interpolation='nearest')
@@ -160,6 +148,8 @@ plt.show()
 #             continue
 
 # Close the serial connection
+
+
 ser.close()
 
 # import serial
