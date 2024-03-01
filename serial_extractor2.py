@@ -78,10 +78,10 @@ while(pos_value<max_vert_angle):
                     image[int((pos_value-min_vert_angle)/increment)][angle]=value
                     print(f"Stored value {value} at angle {angle}")
 
-folder_name = 'Data'
+folder_name = 'data'
 
 # The name of the file you want to save
-file_name = 'cap.txt'
+file_name = 'image.txt'
 
 # The path to the folder
 folder_path = os.path.join(os.getcwd(), folder_name)
