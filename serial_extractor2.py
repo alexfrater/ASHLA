@@ -2,7 +2,7 @@ import serial
 import os
 import re
 
-obj_name = 'cap'
+obj_name = 'bottle'
 def find_highest_data_number(folder_path, prefix):
     # Regex pattern to match files starting with 'cap' followed by numbers
     pattern = re.compile(rf'^{re.escape(prefix)}(\d+)\.txt$')
