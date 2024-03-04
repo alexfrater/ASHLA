@@ -1,6 +1,10 @@
 
 // #include <Arduino.h>
 #include <RPLidar.h>
+#include <TensorFlowLite.h>
+#include "model_data.cc"
+
+
 RPLidar lidar;
 // Define UART and Serial baud rates
 #define LIDAR_BAUD_RATE 115200  // Example baud rate for RP1 LiDAR
@@ -152,4 +156,17 @@ void setup() {
         delay(1000);
       }
     }
+}
+
+
+// Define a TensorFlow Lite model variable
+tflite::MicroErrorReporter micro_error_reporter;
+tflite::ErrorReporter* error_reporter = &micro_error_reporter;
+const tflite::Model* model = tflite::GetModel(model_tflite);
+if (model->version() != TFLITE_SCHEMA_VERSION) {
+  error_reporter->Report(
+      "Model provided is schema version %d not equal "
+      "to supported version %d.",
+      model->version(), TFLITE_SCHEMA_VERSION);
+  return;
 }
