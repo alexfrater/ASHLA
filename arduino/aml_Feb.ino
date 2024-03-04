@@ -2,6 +2,7 @@
 // #include <Arduino.h>
 #include <RPLidar.h>
 #include <TensorFlowLite.h>
+#include "tflite_model.h"
 #include "model_data.cc"
 
 
@@ -50,6 +51,8 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   myservo.attach(D10);  // Attaches the servo on pin D10 to the servo object
 
+  // Initialize TensorFlow Lite model
+  setupTFLiteModel();
 
 }
 
@@ -157,6 +160,19 @@ void setup() {
       }
     }
 }
+
+void loop() {
+  // Your code to prepare input data
+
+  // Run the TensorFlow Lite model inference
+  runInference();
+
+  // Your code to process the inference result
+
+  // Example delay
+  delay(1000);
+}
+
 
 
 // Define a TensorFlow Lite model variable
