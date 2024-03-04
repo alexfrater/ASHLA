@@ -1,7 +1,25 @@
 import serial
 import os
+import re
+
+obj_name = 'cap'
+def find_highest_data_number(folder_path, prefix):
+    # Regex pattern to match files starting with 'cap' followed by numbers
+    pattern = re.compile(rf'^{re.escape(prefix)}(\d+)\.txt$')
+
+    highest_number = -1
+    for filename in os.listdir(folder_path):
+        match = pattern.match(filename)
+        if match:
+            # Extract number part and convert to integer
+            number = int(match.group(1))
+            if number > highest_number:
+                highest_number = number
+
+    return highest_number if highest_number != -1 else 1
+
 # Parameters
-serial_port = 'COM11'  # Change this to your serial port name
+serial_port = 'COM5'  # Change this to your serial port name
 baud_rate = 115200  # Match this to your Arduino's baud rate
 output_file_path = 'output.txt'
 ser = serial.Serial(serial_port, baud_rate)
@@ -79,12 +97,12 @@ while(pos_value<max_vert_angle):
                     print(f"Stored value {value} at angle {angle}")
 
 folder_name = 'data'
-
-# The name of the file you want to save
-file_name = 'image.txt'
-
-# The path to the folder
 folder_path = os.path.join(os.getcwd(), folder_name)
+# The name of the file you want to save
+next_number = find_highest_data_number(folder_path, obj_name) + 1
+file_name = f"{obj_name}{next_number}.txt"
+# The path to the folder
+
 
 # Check if the folder exists, if not, create it
 if not os.path.exists(folder_path):
