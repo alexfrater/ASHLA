@@ -3,8 +3,8 @@ from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 
 def get_model():
     
-    height = 120
-    width = 62
+    height = 140
+    width = 61
 
     model = Sequential([
         Conv2D(16, (3, 3), padding='same', activation='relu', input_shape=(height, width, 1)),
@@ -17,7 +17,7 @@ def get_model():
         Dense(3, activation='softmax')  # Three classes for classification
     ])
 
-    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
 
     return model
