@@ -21,5 +21,3 @@ def get_model():
     model.summary()
 
     return model
-
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=32, verbose=1)
