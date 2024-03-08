@@ -5,8 +5,6 @@
 #include "tflite_model.h"
 #include "model_data.cc"
 
-
-RPLidar lidar;
 // Define UART and Serial baud rates
 #define LIDAR_BAUD_RATE 115200  // Example baud rate for RP1 LiDAR
 #define SERIAL_BAUD_RATE 115200   // Baud rate for communication with Mac
@@ -15,6 +13,8 @@ RPLidar lidar;
 
 
 #include <Servo.h>
+
+RPLidar lidar;
 
 Servo myservo;  // Create a servo object to control a servo
 
@@ -27,19 +27,20 @@ float angleAtMinDist = 0;
 
 
 
-int pos = 16;
+int pos = 1400;
 
 const int max_hoz_angle = 30;
 const int min_hoz_angle = 330;
+const int hor_multiplier = 1;
 
-const int max_vert_angle = 60;
-const int min_vert_angle = 16;
-const int hor_scan_size = (max_hoz_angle-0) +(360-min_hoz_angle);
+const int max_vert_angle = 1000;
+const int min_vert_angle = 700;
+const int hor_scan_size = ((max_hoz_angle-0) +(360-min_hoz_angle))*hor_multiplier;
 int horizontal_scan[hor_scan_size+1];
 
 void setup() {
   // Initialize Serial communication with the Mac
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+  // myservo.attach(9);  // attaches the servo on pin 9 to the servo object
   Serial.begin(SERIAL_BAUD_RATE);
   Serial1.begin(LIDAR_BAUD_RATE);
   // Initialize UART communication with the LiDAR
@@ -51,9 +52,10 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   myservo.attach(D10);  // Attaches the servo on pin D10 to the servo object
 
+  
   // Initialize TensorFlow Lite model
   setupTFLiteModel();
-
+  
 }
 
 
@@ -69,8 +71,8 @@ void setup() {
         myservo.write(pos);
       }
       else if (lidar.getCurrentPoint().startBit){
-        pos  = pos +1;
-        myservo.write(pos);
+        pos  = pos +2;
+        myservo.writeMicroseconds(pos);
         Serial.print("POS");
         Serial.println(pos);
 
@@ -81,15 +83,19 @@ void setup() {
         //   // Serial.println(horizontal_scan[i]);
         // }
 
-        for (int i = 0; i <= hor_scan_size; i++) {
+        for (int i = 0; i <= hor_scan_size*hor_multiplier; i++) {
           Serial.print("Angle ");
           Serial.print(i);
           Serial.print(": ");
           Serial.println(horizontal_scan[i]);
         }
       }
-      
-      int angle_int = (int)round(angle);
+
+      // Serial.print("Angle_rough ");
+      int angle_2 = angle*hor_multiplier;
+
+      // Serial.println(angle_2);
+      int angle_int = (int)round(angle_2);
       // Serial.print("Angle:");
       // Serial.print(angle_int);
       // Serial.println();
@@ -104,7 +110,7 @@ void setup() {
       // }
 
 
-      if  (angle_int >= min_hoz_angle){
+      if  (angle_int >= min_hoz_angle*hor_multiplier){
         // Serial.print("Size");
         // Serial.print(hor_scan_size);
 
@@ -112,7 +118,7 @@ void setup() {
         // int index = angle_int-min_hoz_angle;
         // Serial.print(index);
 
-        horizontal_scan[angle_int-min_hoz_angle] = distance;
+        horizontal_scan[angle_int-min_hoz_angle*hor_multiplier] = distance;
         // Serial.print("Angle:");
         // Serial.print(angle_int);
         // Serial.print("Distance:");
@@ -120,11 +126,11 @@ void setup() {
         // Serial.println();
       }
 
-      if  (angle_int <= max_hoz_angle){
+      if  (angle_int <= max_hoz_angle*hor_multiplier){
         // Serial.print("Index:");
         // int index = angle_int+max_hoz_angle;
         // Serial.print(index);
-        horizontal_scan[angle_int+max_hoz_angle] = distance;
+        horizontal_scan[angle_int+max_hoz_angle*hor_multiplier] = distance;
         // Serial.print("Angle:");
         // Serial.print(angle_int);
         // Serial.print("Distance:");
