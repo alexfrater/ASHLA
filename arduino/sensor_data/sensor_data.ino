@@ -1,194 +1,106 @@
+// Include necessary libraries
+#include <Arduino.h>
+#include <RPLidar.h> // For LiDAR sensor operations
+#include <Servo.h>   // For servo control
+#include <TensorFlowLite.h> // For TensorFlow Lite operations
+#include "tflite_model.h" // TensorFlow Lite model definitions
+#include "model_data.cc"  // Model data, the trained model parameters
 
-// #include <Arduino.h>
-#include <RPLidar.h>
-#include <TensorFlowLite.h>
-#include "tflite_model.h"
-#include "model_data.cc"
+// Define constants for baud rates and the RPLIDAR motor control pin
+#define LIDAR_BAUD_RATE 115200 // Baud rate for RP1 LiDAR communication
+#define SERIAL_BAUD_RATE 115200 // Baud rate for serial communication with PC
+#define RPLIDAR_MOTOR D4 // PWM pin for controlling the speed of RPLIDAR's motor
 
-// Define UART and Serial baud rates
-#define LIDAR_BAUD_RATE 115200  // Example baud rate for RP1 LiDAR
-#define SERIAL_BAUD_RATE 115200   // Baud rate for communication with Mac
-
-#define RPLIDAR_MOTOR D4 // The PWM pin for control the speed of RPLIDAR's motor.
-
-
-#include <Servo.h>
-
+// Create objects for the RPLidar and Servo
 RPLidar lidar;
+Servo myservo;
 
-Servo myservo;  // Create a servo object to control a servo
-
-float minDistance = 100000;
+// Variables for managing distance and angle measurements
+float minDistance = 100000; // Initialize with a high value
 float angleAtMinDist = 0;
-// int pos = 50;  
-//50 horizontal
-//Anything above 65 do not do it it goes backwards
-//16 forward max
 
+// Positioning for the servo
+int pos = 1400; // Starting position
 
-
-int pos = 1400;
-
+// Angle configurations for horizontal and vertical movements
 const int max_hoz_angle = 30;
 const int min_hoz_angle = 330;
 const int hor_multiplier = 1;
-
 const int max_vert_angle = 1000;
 const int min_vert_angle = 700;
-const int hor_scan_size = ((max_hoz_angle-0) +(360-min_hoz_angle))*hor_multiplier;
-int horizontal_scan[hor_scan_size+1];
+const int hor_scan_size = ((max_hoz_angle - 0) + (360 - min_hoz_angle)) * hor_multiplier;
+int horizontal_scan[hor_scan_size + 1]; // Array to store horizontal scan data
 
 void setup() {
-  // Initialize Serial communication with the Mac
-  // myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+  // Initialize Serial communication
   Serial.begin(SERIAL_BAUD_RATE);
-  Serial1.begin(LIDAR_BAUD_RATE);
-  // Initialize UART communication with the LiDAR
-  lidar.begin(Serial1);  // Assuming LiDAR is connected to Serial1
+  Serial1.begin(LIDAR_BAUD_RATE); // Setup Serial1 for LiDAR communication
 
-  UART myUART1(PA_9,  PA_10, NC, NC);
-                
-  pinMode(RPLIDAR_MOTOR, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-  myservo.attach(D10);  // Attaches the servo on pin D10 to the servo object
+  // Setup RPLIDAR
+  lidar.begin(Serial1); // Assuming LiDAR is connected to Serial1
+  pinMode(RPLIDAR_MOTOR, OUTPUT); // Set RPLIDAR motor pin as output
+  myservo.attach(D10);  // Attach the servo object to pin D10
 
-  
   // Initialize TensorFlow Lite model
   setupTFLiteModel();
-  
-}
-
-
-  void loop() {
-    if (IS_OK(lidar.waitPoint())) {
-      //perform data processing here...
-      float distance = lidar.getCurrentPoint().distance;
-      float angle = lidar.getCurrentPoint().angle;  // 0-360 deg
-
-
-      if (pos > max_vert_angle-1){
-        pos = min_vert_angle;
-        myservo.write(pos);
-      }
-      else if (lidar.getCurrentPoint().startBit){
-        pos  = pos +2;
-        myservo.writeMicroseconds(pos);
-        Serial.print("POS");
-        Serial.println(pos);
-
-        // for (int i = 0; i < hor_scan_size; i++) {
-        //   // Serial.print("Angle ");
-        //   // Serial.print(i+min_hoz_angle);
-        //   // Serial.print("Distance ");
-        //   // Serial.println(horizontal_scan[i]);
-        // }
-
-        for (int i = 0; i <= hor_scan_size*hor_multiplier; i++) {
-          Serial.print("Angle ");
-          Serial.print(i);
-          Serial.print(": ");
-          Serial.println(horizontal_scan[i]);
-        }
-      }
-
-      // Serial.print("Angle_rough ");
-      int angle_2 = angle*hor_multiplier;
-
-      // Serial.println(angle_2);
-      int angle_int = (int)round(angle_2);
-      // Serial.print("Angle:");
-      // Serial.print(angle_int);
-      // Serial.println();
-      // if  (angle_int >= min_hoz_angle | angle_int <= max_hoz_angle){
-      //   // horizontal_scan[angle_int-min_hoz_angle] = distance;
-
-      //   Serial.print("Angle:");
-      //   Serial.print(angle_int);
-      //   Serial.print("Distance:");
-      //   Serial.print(distance);
-      //   Serial.println();
-      // }
-
-
-      if  (angle_int >= min_hoz_angle*hor_multiplier){
-        // Serial.print("Size");
-        // Serial.print(hor_scan_size);
-
-        // Serial.print("Index:");
-        // int index = angle_int-min_hoz_angle;
-        // Serial.print(index);
-
-        horizontal_scan[angle_int-min_hoz_angle*hor_multiplier] = distance;
-        // Serial.print("Angle:");
-        // Serial.print(angle_int);
-        // Serial.print("Distance:");
-        // Serial.print(distance);
-        // Serial.println();
-      }
-
-      if  (angle_int <= max_hoz_angle*hor_multiplier){
-        // Serial.print("Index:");
-        // int index = angle_int+max_hoz_angle;
-        // Serial.print(index);
-        horizontal_scan[angle_int+max_hoz_angle*hor_multiplier] = distance;
-        // Serial.print("Angle:");
-        // Serial.print(angle_int);
-        // Serial.print("Distance:");
-        // Serial.print(distance);
-        // Serial.println();
-      }
-
-
-
-
-
-      // if (lidar.getCurrentPoint().startBit) {
-      //    // a new scan, display the previous data...
-      //    printData(angleAtMinDist, minDistance);
-      //    minDistance = 100000;
-      //    angleAtMinDist = 0;
-      // } else {
-      //    if ( distance > 0 &&  distance < minDistance) {
-      //       minDistance = distance;
-      //       angleAtMinDist = angle;
-      //    }
-      // }
-    }
-    else {
-      analogWrite(RPLIDAR_MOTOR, 0); //stop the rplidar motor
-      // Try to detect RPLIDAR
-      rplidar_response_device_info_t info;
-      if (IS_OK(lidar.getDeviceInfo(info, 100))) {
-        // Detected
-        lidar.startScan();
-        analogWrite(RPLIDAR_MOTOR, 200);
-        delay(1000);
-      }
-    }
 }
 
 void loop() {
-  // Your code to prepare input data
+  if (IS_OK(lidar.waitPoint())) {
+    // Data processing when a point is successfully read from LiDAR
+    float distance = lidar.getCurrentPoint().distance;
+    float angle = lidar.getCurrentPoint().angle; // Angle in degrees (0-360)
 
-  // Run the TensorFlow Lite model inference
-  runInference();
+    // Servo control logic based on LiDAR readings
+    if (pos > max_vert_angle - 1) {
+      pos = min_vert_angle;
+      myservo.write(pos);
+    } else if (lidar.getCurrentPoint().startBit) {
+      pos += 2;
+      myservo.writeMicroseconds(pos);
+      Serial.print("POS: ");
+      Serial.println(pos);
+    }
 
-  // Your code to process the inference result
+    // Display angle and distance readings
+    int angle_2 = angle * hor_multiplier;
+    int angle_int = (int)round(angle_2);
 
-  // Example delay
+    if (angle_int >= min_hoz_angle * hor_multiplier) {
+      horizontal_scan[angle_int - min_hoz_angle * hor_multiplier] = distance;
+    }
+
+    if (angle_int <= max_hoz_angle * hor_multiplier) {
+      horizontal_scan[angle_int + max_hoz_angle * hor_multiplier] = distance;
+    }
+  } else {
+    // If LiDAR is not OK, stop the motor and try reinitializing
+    analogWrite(RPLIDAR_MOTOR, 0); // Stop the RPLIDAR motor
+
+    rplidar_response_device_info_t info;
+    if (IS_OK(lidar.getDeviceInfo(info, 100))) {
+      // RPLIDAR detected, start scan and motor
+      lidar.startScan();
+      analogWrite(RPLIDAR_MOTOR, 200); // Start the RPLIDAR motor
+      delay(1000);
+    }
+  }
+
+  // Run TensorFlow Lite model inference in a separate function (not shown)
+  // runInference();
+
+  // Example delay (adjust as needed)
   delay(1000);
 }
 
+// Example function to setup TensorFlow Lite model
+// This should be defined based on your TensorFlow Lite setup
+void setupTFLiteModel() {
+  // Example: Initialize TensorFlow Lite model here
+}
 
-
-// Define a TensorFlow Lite model variable
-tflite::MicroErrorReporter micro_error_reporter;
-tflite::ErrorReporter* error_reporter = &micro_error_reporter;
-const tflite::Model* model = tflite::GetModel(model_tflite);
-if (model->version() != TFLITE_SCHEMA_VERSION) {
-  error_reporter->Report(
-      "Model provided is schema version %d not equal "
-      "to supported version %d.",
-      model->version(), TFLITE_SCHEMA_VERSION);
-  return;
+// Example function to run inference using TensorFlow Lite model
+// This function needs to be implemented based on your model requirements
+void runInference() {
+  // Example: Code to prepare input data and run inference
 }
