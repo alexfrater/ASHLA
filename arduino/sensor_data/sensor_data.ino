@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <RPLidar.h> // For LiDAR sensor operations
 #include <Servo.h>   // For servo control
-#include <TensorFlowLite.h> // For TensorFlow Lite operations
+// #include <TensorFlowLite.h> // For TensorFlow Lite operations
 #include "tflite_model.h" // TensorFlow Lite model definitions
 #include "model_data.cc"  // Model data, the trained model parameters
 

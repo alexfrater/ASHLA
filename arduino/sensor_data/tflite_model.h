@@ -1,12 +1,37 @@
+#include <compatibility.h>
+#include <debug_log.h>
+#include <fake_micro_context.h>
+#include <flatbuffer_utils.h>
+#include <memory_helpers.h>
+#include <micro_allocation_info.h>
+#include <micro_allocator.h>
+#include <micro_arena_constants.h>
+#include <micro_common.h>
+#include <micro_context.h>
+#include <micro_graph.h>
+#include <micro_interpreter.h>
+#include <micro_interpreter_context.h>
+#include <micro_interpreter_graph.h>
+#include <micro_log.h>
+#include <micro_mutable_op_resolver.h>
+#include <micro_op_resolver.h>
+#include <micro_profiler.h>
+#include <micro_profiler_interface.h>
+#include <micro_resource_variable.h>
+#include <micro_time.h>
+#include <micro_utils.h>
+#include <mock_micro_graph.h>
+#include <recording_micro_allocator.h>
+#include <recording_micro_interpreter.h>
+#include <system_setup.h>
+#include <test_helper_custom_ops.h>
+#include <test_helpers.h>
+
 #ifndef TFLITE_MODEL_H
 #define TFLITE_MODEL_H
 
 #include "model_data.cc" // Include the model data
-#include <TensorFlowLite.h>
-#include "tensorflow/lite/micro/all_ops_resolver.h"
-#include "tensorflow/lite/micro/micro_error_reporter.h"
-#include "tensorflow/lite/micro/micro_interpreter.h"
-#include "tensorflow/lite/schema/schema_generated.h"
+
 
 // Define the tensor arena size. You might need to adjust this depending on your model's requirements and your device's memory constraints.
 constexpr int kTensorArenaSize = 16 * 1024; // Example: 16 KB
