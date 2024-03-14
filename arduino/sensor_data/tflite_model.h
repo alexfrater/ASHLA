@@ -1,89 +1,42 @@
-#include <compatibility.h>
-#include <debug_log.h>
-#include <fake_micro_context.h>
-#include <flatbuffer_utils.h>
-#include <memory_helpers.h>
-#include <micro_allocation_info.h>
-#include <micro_allocator.h>
-#include <micro_arena_constants.h>
-#include <micro_common.h>
-#include <micro_context.h>
-#include <micro_graph.h>
-#include <micro_interpreter.h>
-#include <micro_interpreter_context.h>
-#include <micro_interpreter_graph.h>
-#include <micro_log.h>
-#include <micro_mutable_op_resolver.h>
-#include <micro_op_resolver.h>
-#include <micro_profiler.h>
-#include <micro_profiler_interface.h>
-#include <micro_resource_variable.h>
-#include <micro_time.h>
-#include <micro_utils.h>
-#include <mock_micro_graph.h>
-#include <recording_micro_allocator.h>
-#include <recording_micro_interpreter.h>
-#include <system_setup.h>
-#include <test_helper_custom_ops.h>
-#include <test_helpers.h>
+#include <eloquent_tinyml.h>
+#include <tflm_cortexm.h>
+// #include "model_data.cc" // Include the model data
+#include "model.h" // Include the model data
 
-#ifndef TFLITE_MODEL_H
-#define TFLITE_MODEL_H
+// #define NUMBER_OF_INPUTS (140*61) //8540   // replace 'x' with the actual number of inputs for your model
+// #define NUMBER_OF_OUTPUTS 3 // replace 'y' with the actual number of outputs of your model
+// #define TENSOR_ARENA_SIZE (256 * 1024)  // 256 KB  // replace 'z' with the size in bytes that works for your model
 
-#include "model_data.cc" // Include the model data
+// EloquentTinyML tflite(model_data, TENSOR_ARENA_SIZE);
+// float inputs[NUMBER_OF_INPUTS];
+// float outputs[NUMBER_OF_OUTPUTS];
 
+void setup() {
+    Serial.begin(9600);
 
-// Define the tensor arena size. You might need to adjust this depending on your model's requirements and your device's memory constraints.
-constexpr int kTensorArenaSize = 16 * 1024; // Example: 16 KB
-byte tensorArena[kTensorArenaSize];
+    while (!Serial); // Wait for the serial monitor
 
-namespace {
-  tflite::ErrorReporter* errorReporter = nullptr;
-  const tflite::Model* model = nullptr;
-  tflite::MicroInterpreter* interpreter = nullptr;
-  TfLiteTensor* inputTensor = nullptr;
-  TfLiteTensor* outputTensor = nullptr;
+    Serial.println("Setting up the model...");
+    tflite.begin(inputs, outputs);
 }
 
-// Function to initialize the TensorFlow Lite model
-void setupTFLiteModel() {
-  static tflite::MicroErrorReporter microErrorReporter; // Static variable for error reporting.
-  errorReporter = &microErrorReporter;
-  
-  model = tflite::GetModel(model_data);
-  if (model->version() != TFLITE_SCHEMA_VERSION) {
-    errorReporter->Report("Model version does not match TensorFlow Lite schema version.");
-    return;
-  }
-  
-  static tflite::AllOpsResolver resolver; // Static variable for the ops resolver.
-  
-  static tflite::MicroInterpreter staticInterpreter(model, resolver, tensorArena, kTensorArenaSize, errorReporter);
-  interpreter = &staticInterpreter;
+void loop() {
+    // Fill 'inputs' with sensor data or other input
 
-  // Allocate memory for tensors.
-  TfLiteStatus allocateStatus = interpreter->AllocateTensors();
-  if (allocateStatus != kTfLiteOk) {
-    errorReporter->Report("Failed to allocate tensors.");
-    return;
-  }
+    // Run the model on the input data
+    tflite.predict();
 
-  // Obtain pointers to the model's input and output tensors.
-  inputTensor = interpreter->input(0);
-  outputTensor = interpreter->output(0);
+    // Use 'outputs' to get the model's predictions
+    for (size_t i = 0; i < NUMBER_OF_OUTPUTS; i++) {
+        Serial.print("Output ");
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.println(outputs[i], 6); // print the output with 6 decimal places
+    }
+
+    // Delay for a second for readability
+    delay(1000);
 }
 
-// Function to perform inference
-void runInference() {
-  // Ensure you've properly set the inputTensor data before calling this function.
-  
-  // Run the model on the input tensor and check for success.
-  if (interpreter->Invoke() != kTfLiteOk) {
-    errorReporter->Report("Failed to invoke TensorFlow Lite interpreter.");
-    return;
-  }
 
-  // Here you can read the outputTensor data and process the inference results.
-}
 
-#endif // TFLITE_MODEL_H
