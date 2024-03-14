@@ -3,8 +3,8 @@
 #include <RPLidar.h> // For LiDAR sensor operations
 #include <Servo.h>   // For servo control
 // #include <TensorFlowLite.h> // For TensorFlow Lite operations
-#include "tflite_model.h" // TensorFlow Lite model definitions
-#include "model_data.cc"  // Model data, the trained model parameters
+//#include "tflite_model.h" // TensorFlow Lite model definitions
+//#include "model_data.cc"  // Model data, the trained model parameters
 
 // Define constants for baud rates and the RPLIDAR motor control pin
 #define LIDAR_BAUD_RATE 115200 // Baud rate for RP1 LiDAR communication
@@ -42,7 +42,7 @@ void setup() {
   myservo.attach(D10);  // Attach the servo object to pin D10
 
   // Initialize TensorFlow Lite model
-  setupTFLiteModel();
+//  setupTFLiteModel();
 }
 
 void loop() {
@@ -90,17 +90,17 @@ void loop() {
   // runInference();
 
   // Example delay (adjust as needed)
-  delay(1000);
+  //delay(1000);
 }
 
 // Example function to setup TensorFlow Lite model
 // This should be defined based on your TensorFlow Lite setup
-void setupTFLiteModel() {
+//void setupTFLiteModel() {
   // Example: Initialize TensorFlow Lite model here
-}
+//}
 
 // Example function to run inference using TensorFlow Lite model
 // This function needs to be implemented based on your model requirements
-void runInference() {
+//void runInference() {
   // Example: Code to prepare input data and run inference
-}
+//}
