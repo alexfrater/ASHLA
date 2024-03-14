@@ -1,7 +1,5 @@
-#include <eloquent_tinyml.h>
-#include <tflm_cortexm.h>
-// #include "model_data.cc" // Include the model data
-#include "model.h" // Include the model data
+#include "model_data.cc" // Include the model data
+
 
 // #define NUMBER_OF_INPUTS (140*61) //8540   // replace 'x' with the actual number of inputs for your model
 // #define NUMBER_OF_OUTPUTS 3 // replace 'y' with the actual number of outputs of your model
