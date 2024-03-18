@@ -2,14 +2,12 @@
 #include <Arduino.h>
 #include <RPLidar.h> // For LiDAR sensor operations
 #include <Servo.h>   // For servo control
-// #include <TensorFlowLite.h> // For TensorFlow Lite operations
-//#include "tflite_model.h" // TensorFlow Lite model definitions
-//#include "model_data.cc"  // Model data, the trained model parameters
+#include <Arduino_PortentaBreakout.h>
 
 // Define constants for baud rates and the RPLIDAR motor control pin
 #define LIDAR_BAUD_RATE 115200 // Baud rate for RP1 LiDAR communication
 #define SERIAL_BAUD_RATE 115200 // Baud rate for serial communication with PC
-#define RPLIDAR_MOTOR D4 // PWM pin for controlling the speed of RPLIDAR's motor
+#define RPLIDAR_MOTOR  PWM4//PWM4 // PWM pin for controlling the speed of RPLIDAR's motor
 
 // Create objects for the RPLidar and Servo
 RPLidar lidar;
@@ -34,19 +32,22 @@ int horizontal_scan[hor_scan_size + 1]; // Array to store horizontal scan data
 void setup() {
   // Initialize Serial communication
   Serial.begin(SERIAL_BAUD_RATE);
-  Serial1.begin(LIDAR_BAUD_RATE); // Setup Serial1 for LiDAR communication
+  Serial2.begin(LIDAR_BAUD_RATE); // Setup Serial1 for LiDAR communication
 
   // Setup RPLIDAR
-  lidar.begin(Serial1); // Assuming LiDAR is connected to Serial1
+  lidar.begin(Serial2); // Assuming LiDAR is connected to Serial1
   pinMode(RPLIDAR_MOTOR, OUTPUT); // Set RPLIDAR motor pin as output
-  myservo.attach(D10);  // Attach the servo object to pin D10
+  myservo.attach(10);  //PWM 8
 
-  // Initialize TensorFlow Lite model
-//  setupTFLiteModel();
+
+
 }
 
 void loop() {
+  analogWrite(RPLIDAR_MOTOR, 200); // Start the RPLIDAR motor
+
   if (IS_OK(lidar.waitPoint())) {
+    Serial.print("hey1: ");
     // Data processing when a point is successfully read from LiDAR
     float distance = lidar.getCurrentPoint().distance;
     float angle = lidar.getCurrentPoint().angle; // Angle in degrees (0-360)
@@ -86,21 +87,5 @@ void loop() {
     }
   }
 
-  // Run TensorFlow Lite model inference in a separate function (not shown)
-  // runInference();
-
-  // Example delay (adjust as needed)
-  //delay(1000);
+ 
 }
-
-// Example function to setup TensorFlow Lite model
-// This should be defined based on your TensorFlow Lite setup
-//void setupTFLiteModel() {
-  // Example: Initialize TensorFlow Lite model here
-//}
-
-// Example function to run inference using TensorFlow Lite model
-// This function needs to be implemented based on your model requirements
-//void runInference() {
-  // Example: Code to prepare input data and run inference
-//}

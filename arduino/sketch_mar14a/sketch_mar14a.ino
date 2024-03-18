@@ -1,11 +1,15 @@
+#include <Arduino_PortentaBreakout.h>
+
 #include <RPLidar.h>
 RPLidar lidar;
 // Define UART and Serial baud rates
 #define LIDAR_BAUD_RATE 115200  // Example baud rate for RP1 LiDAR
 #define SERIAL_BAUD_RATE 115200   // Baud rate for communication with Mac
  
-#define RPLIDAR_MOTOR D4 // The PWM pin for control the speed of RPLIDAR's motor.
- 
+// #define RPLIDAR_MOTOR PWM4 // The PWM pin for control the speed of RPLIDAR's motor.
+breakoutPin pwmPins[] = {PWM0, PWM1, PWM2, PWM3, PWM4 , PWM5, PWM6 , PWM7, PWM8, PWM9};
+byte RPLIDAR_MOTOR = 4;
+
  
 #include <Servo.h>
  
@@ -39,7 +43,7 @@ void setup() {
   lidar.begin(Serial1);  // Assuming LiDAR is connected to Serial1
  
   UART myUART1(PA_9,  PA_10, NC, NC);
-  pinMode(RPLIDAR_MOTOR, OUTPUT);
+  pinMode(pwmPins[RPLIDAR_MOTOR], OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   myservo.attach(D10);  // Attaches the servo on pin D10 to the servo object
  
